@@ -177,3 +177,21 @@ sed -n -e 1p -e 21,30p input/clean_waterbase.csv > input/frag.csv ; mv input/fra
 sed -n -e 1p -e 21,30p input/clean_waterbase.csv > input/frag.csv ; mv input/frag.csv input/fragments/3.csv
 sed -n -e 1p -e 31,40p input/clean_waterbase.csv > input/frag.csv ; mv input/frag.csv input/fragments/4.csv
 ```
+
+## Running as full Spark jobs
+
+Run `sbt assembly` to create a fat jar, and run with the following commands:
+
+```bash
+# Convert CSV to Parquet
+spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.1 --class demo.ConvertCsvToParquet --master "local[4]" target/scala-2.12/abc-demo-assembly-0.1.0-SNAPSHOT.jar
+
+# Run analysis job writing to Kafka
+spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.1 --class demo.Analyse --master "local[4]" target/scala-2.12/abc-demo-assembly-0.1.0-SNAPSHOT.jar
+
+# Stream incoming bits of CSV to Kafka, outputting the maximum observed mean for each country
+spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.1 --class demo.Streamer --master "local[4]" target/scala-2.12/abc-demo-assembly-0.1.0-SNAPSHOT.jar
+
+# Listen for items in Kafka topic and output to console
+spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.1 --class demo.Listener --master "local[4]" target/scala-2.12/abc-demo-assembly-0.1.0-SNAPSHOT.jar
+```
